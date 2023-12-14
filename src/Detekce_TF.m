@@ -17,23 +17,14 @@ for i=1:1:length(soubory)
     % Filtrace signalu
     ekg_signal_f = filtr(ekg_signal, VZORKOVACI_FREKVENCE, MIN_FREKV, MAX_FREKV);
 
-    %{
-    hold on;
-    plot(ekg_signal);
-    plot(ekg_signal_f);
-    legend('Behem filtrace', 'Pred filtraci', 'Po filtraci');
-    %}
-
     % Rozkmitani signalu
     ekg_signal_ok = add_high_frequency(ekg_signal_f);
 
     % Nalezeni pozic QRS komplexu
-    qrs_pozice = vypocitej(ekg_signal_ok, VZORKU);
+    qrs_pozice = vypocitej(ekg_signal_ok);
 
-    % Vykresleni test
-    %plot(ekg_signal);
-    %hold on;
-    %stem(qrs_pozice, ones(length(qrs_pozice), 1));
+    % Vykresleni a porovnani dat
+    %vykresli(ekg_signal_f, data.ann, qrs_pozice);
 
     % Provedeni testu a ulozeni vysldku testu
     [ACC, Se, PP, TP, FP, FN] = QRS_tester(data.ann, qrs_pozice, VZORKOVACI_FREKVENCE);
@@ -51,6 +42,22 @@ function [] = vypis_vysledky(vysledky, soubory, tf)
     end
     vysledky_prumer = mean(vysledky);
     fprintf("Prumer: %.2f %%\n", vysledky_prumer);
+end
+
+function [] = vykresli(ekg_signal, qrs_db, qrs_pozice)
+    vzorku = 3600;
+    sig = ekg_signal(1:vzorku);
+    db = qrs_db(find(qrs_db <= vzorku));
+    pozice = qrs_pozice(find(qrs_pozice <= vzorku));
+
+    figure;
+    hold on;
+    plot(sig, 'Color',[1,0,0]);
+    stem(db, sig(db), 'Color',[0,1,0], 'LineWidth',1);
+    stem(pozice, sig(pozice), 'Color',[0,0,1], 'LineWidth',1);
+    legend('EKG signal', 'Realne QRS pozice', 'Detekovane QRS pozice');
+    ylabel('Magnituda');
+    xlabel('Vzorky');
 end
 
 
@@ -99,8 +106,9 @@ function [ekg_signal_new] = add_high_frequency(ekg_signal)
 end
 
 
-function [qrs_pozice] = vypocitej(ekg_signal, vzorku)
+function [qrs_pozice] = vypocitej(ekg_signal)
     segment_size = 160;
+    vzorku = length(ekg_signal);
     count = ceil(vzorku / segment_size);
     D = zeros(1, count);
     D(1) = segment_size;
