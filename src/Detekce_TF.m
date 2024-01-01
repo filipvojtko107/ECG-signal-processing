@@ -29,7 +29,7 @@ for i=1:1:length(soubory)
     % Provedeni testu a ulozeni vysldku testu
     [ACC, Se, PP, TP, FP, FN] = QRS_tester(data.ann, qrs_pozice, VZORKOVACI_FREKVENCE);
     vysledky(i) = ACC;
-    tf(i) = length(qrs_pozice) / (VZORKU / 360 / 60);
+    tf(i) = length(qrs_pozice) / (VZORKU / VZORKOVACI_FREKVENCE / 60);
 end
 vypis_vysledky(vysledky, soubory, tf);
 
